@@ -10,18 +10,54 @@ class Bullet(pygame.sprite.Sprite):
         pygame.draw.circle(self.image, (255, 255, 255), (2, 2), 2)
         self.radian_angle = radian_angle
         self.radius = 70
-        self.center = center
+        self.bullet_center = [center[0], center[1]]
+        self.original_center = center
         
+        ### flags
+        self.exceed_pos_x = False
+        self.exceed_neg_x = False
+        self.pass_boundary = False
+        self.pass_boundary_neg_x = False
+        
+        self.exceed_pos_y = False
+        self.pass_boundary_pos_y = False
+        self.exceed_neg_y = False
+        self.pass_boundary_neg_y = False
     
     def update(self):
         length_x_fire = math.cos(self.radian_angle) * self.radius 
         length_y_fire = math.sin(self.radian_angle) * self.radius 
-        x_fire = int(self.center[0] + length_x_fire)
-        y_fire = int(self.center[1] - length_y_fire)
+        x_fire = int(self.bullet_center[0] + length_x_fire)
+        y_fire = int(self.bullet_center[1] - length_y_fire)
         self.rect.center = [x_fire, y_fire], 
         print (self.rect)
         
         self.radius = self.radius + 13
+        
+        if self.exceed_pos_x == True:
+            #self.new_x_pos = self.bullet_center
+            self.bullet_center[0] = 0
+            self.radius = 0
+            self.pass_boundary = True
+            self.exceed_pos_x = False
+            
+        if self.exceed_neg_x == True:
+            self.bullet_center[0] = 790
+            self.radius = 0
+            self.pass_boundary_neg_x = True
+            self.exceed_neg_x = False
+    
+        if self.exceed_pos_y == True:
+            self.bullet_center[1] = 0
+            self.radius = 0
+            self.pass_boundary_pos_y = True
+            self.exceed_pos_y = False
+            
+        if self.exceed_neg_y == True:
+            self.bullet_center[1] = 600
+            self.radius = 0
+            self.pass_boundary_neg_y = True
+            self.exceed_neg_y = False
         
         #if self.rect.centerx > 800:
         #    self.rect.centerx = 0
@@ -183,16 +219,38 @@ while True:
         
     for bullet in bullet_group:
         if bullet.rect.centerx > screen_size[0]:
-            bullet_group.remove(bullet)
-           # bullet.rect.centerx = 0
-           #print("exceeded screen width") 
-           
+            bullet.exceed_pos_x = True
+            print("exceeded screen width")
+        
+        
         if bullet.rect.centerx < 0:
-            bullet_group.remove(bullet)
+            bullet.exceed_neg_x = True            
+            
+            
         if bullet.rect.centery > 600:
-            bullet_group.remove(bullet)
+            bullet.exceed_pos_y = True
+            
         if bullet.rect.centery < 0:
-            bullet_group.remove(bullet)
+            bullet.exceed_neg_y = True
+            
+    ####### checking boundaries
+        if bullet.pass_boundary == True:
+            if bullet.radius > bullet.original_center[0] - 300:
+                bullet_group.remove(bullet)
+                #bullet.pass_boundary = False
+        
+        if bullet.pass_boundary_neg_x == True:
+            if bullet.radius > bullet.original_center[0] + 300:
+                bullet_group.remove(bullet)
+                
+        
+        if bullet.pass_boundary_pos_y == True:
+            if bullet.radius > bullet.original_center[1] - 300:
+                bullet_group.remove(bullet)
+                
+        if bullet.pass_boundary_neg_y == True:
+            if bullet.radius > bullet.original_center[1] + 200:
+                bullet_group.remove(bullet)
         
     pygame.sprite.groupcollide(bullet_group, rock_group, True, True)
     
