@@ -1,5 +1,6 @@
 import pygame, sys
 import math
+import random
 from pygame.locals import *
 
 class Bullet(pygame.sprite.Sprite):
@@ -7,6 +8,7 @@ class Bullet(pygame.sprite.Sprite):
         pygame.sprite.Sprite.__init__(self)
         self.image = pygame.Surface((4, 4))
         self.rect = self.image.get_rect()
+        self.rect.center = center
         pygame.draw.circle(self.image, (255, 255, 255), (2, 2), 2)
         self.radian_angle = radian_angle
         self.radius = 70
@@ -14,14 +16,11 @@ class Bullet(pygame.sprite.Sprite):
         self.original_center = center
         
         ### flags
-        self.exceed_pos_x = False
-        self.exceed_neg_x = False
         self.pass_boundary = False
         self.pass_boundary_neg_x = False
         
-        self.exceed_pos_y = False
+
         self.pass_boundary_pos_y = False
-        self.exceed_neg_y = False
         self.pass_boundary_neg_y = False
     
     def update(self):
@@ -29,45 +28,68 @@ class Bullet(pygame.sprite.Sprite):
         length_y_fire = math.sin(self.radian_angle) * self.radius 
         x_fire = int(self.bullet_center[0] + length_x_fire)
         y_fire = int(self.bullet_center[1] - length_y_fire)
-        self.rect.center = [x_fire, y_fire], 
-        print (self.rect)
+        self.rect.center = [x_fire, y_fire] 
+        #print (self.rect)
         
         self.radius = self.radius + 13
         
-        if self.exceed_pos_x == True:
+        if self.rect.centerx > 800:
             #self.new_x_pos = self.bullet_center
             self.bullet_center[0] = 0
+            self.rect.centerx = self.bullet_center[0]
             self.radius = 0
             self.pass_boundary = True
-            self.exceed_pos_x = False
+            #self.exceed_pos_x = False
             
-        if self.exceed_neg_x == True:
+        if self.rect.centerx < 0:
             self.bullet_center[0] = 790
+            self.rect.centerx = self.bullet_center[0]
             self.radius = 0
             self.pass_boundary_neg_x = True
-            self.exceed_neg_x = False
+            #self.exceed_neg_x = False
     
-        if self.exceed_pos_y == True:
+        if self.rect.centery > 600:
             self.bullet_center[1] = 0
+            self.rect.centery = self.bullet_center[1]
             self.radius = 0
             self.pass_boundary_pos_y = True
-            self.exceed_pos_y = False
+            #self.exceed_pos_y = False
             
-        if self.exceed_neg_y == True:
+        if self.rect.centery < 0:
             self.bullet_center[1] = 600
+            self.rect.centery = self.bullet_center[1]
             self.radius = 0
             self.pass_boundary_neg_y = True
-            self.exceed_neg_y = False
-        
-        #if self.rect.centerx > 800:
-        #    self.rect.centerx = 0
+            
         
 class Rock(pygame.sprite.Sprite):
     def __init__(self):
         pygame.sprite.Sprite.__init__(self)
-        self.image = pygame.Surface((150, 150))
-        self.rect = pygame.draw.polygon(self.image, (0, 255, 0), [(100, 100),
-            (150, 100), (30, 75), (80, 130)], 3)
+        rand_x = random.randint(0, 800)
+        rand_y = random.randint(0, 600)
+        self.image = pygame.Surface((40, 40))
+        self.rect = pygame.draw.circle(self.image, (0, 255, 0), (20, 20), 20, 2)
+        self.rect.center = (rand_x, rand_y)
+        
+        self.direction = random.choice(["right", "left", "up", "down"])
+    def update(self):
+        if self.direction == "right":
+            self.rect.centerx += 1
+        if self.direction == "left":
+            self.rect.centerx -= 1
+        if self.direction == "up":
+            self.rect.centery -= 1
+        if self.direction == "down":
+            self.rect.centery += 1
+        
+        if self.rect.centerx > 800:
+            self.rect.centerx = 0
+        if self.rect.centerx < 0:
+            self.rect.centerx = 800
+        if self.rect.centery > 600:
+            self.rect.centery = 0
+        if self.rect.centery < 0:
+            self.rect.centery = 600
     
 
 
@@ -78,10 +100,12 @@ RED = ((255, 0, 0))
 GREEN = ((0, 255, 0))
 ORANGE = ((254, 158, 27))
 center = [400, 300]
-size = 10
+size = 7
 angle = 0
 WHITE = ((255, 255, 255))
-radius = 50
+radius = 20
+
+thruster_radius = 50
 
 screen_size = (800, 600)
 windowSurface = pygame.display.set_mode(screen_size)
@@ -100,6 +124,8 @@ bullet_group = pygame.sprite.Group()
 rock = Rock()
 rock_group = pygame.sprite.Group()
 rock_group.add(rock)
+
+initial_rock_time = pygame.time.get_ticks()
 
 while True:
     for event in pygame.event.get():
@@ -152,8 +178,8 @@ while True:
     y_3 = int(center[1] - length_y_3)
     
 ###
-    length_x_motion = math.cos(radian_angle) * radius / 8
-    length_y_motion = math.sin(radian_angle) * radius / 8
+    length_x_motion = math.cos(radian_angle) * radius / 5
+    length_y_motion = math.sin(radian_angle) * radius / 5
     x_motion = int(center[0] + length_x_motion)
     y_motion = int(center[1] - length_y_motion)
      
@@ -164,17 +190,32 @@ while True:
     x_4 = int(center[0] + length_x_4)
     y_4 = int(center[1] - length_y_4)
     
-    thrust_x = (x_2 + x_3) / 2
-    thrust_y = (y_2 + y_3) / 2
+#### calculation for thruster
+    angle_2 = math.radians(angle + 120)
+    length_x_2 = math.cos(angle_2) * thruster_radius
+    length_y_2 = math.sin(angle_2) * thruster_radius
+    thrust_x_2 = int(center[0] + length_x_2)
+    thrust_y_2 = int(center[1] - length_y_2)
+    
+#### calculation for thruster
+    angle_3 = math.radians(angle + 240)
+    length_x_3 = math.cos(angle_3) * thruster_radius
+    length_y_3 = math.sin(angle_3) * thruster_radius
+    thrust_x_3 = int(center[0] + length_x_3)
+    thrust_y_3 = int(center[1] - length_y_3)
+    
+    thrust_x = (thrust_x_2 + thrust_x_3) / 2
+    thrust_y = (thrust_y_2 + thrust_y_3) / 2
     
 
     windowSurface.fill((0, 0, 0))
     
-    #pygame.draw.circle(windowSurface, RED, center, size)
-    #pygame.draw.circle(windowSurface, GREEN, (x, y), size)
-    #pygame.draw.circle(windowSurface, GREEN, (x_2, y_2), size)
-    #pygame.draw.circle(windowSurface, GREEN, (x_3, y_3), size)
-    #
+    
+### timer for rock
+    elapsed_rock_time = (pygame.time.get_ticks() - initial_rock_time) / 1000
+    print(elapsed_rock_time)
+    
+    rock_group.update()
     rock_group.draw(windowSurface)
     
     pygame.draw.line(windowSurface, WHITE, (x,y), (x_2, y_2))
@@ -182,7 +223,7 @@ while True:
     pygame.draw.line(windowSurface, WHITE, (center), (x_3, y_3))
     pygame.draw.line(windowSurface, WHITE, (x_3, y_3), (x, y))
     
-    pygame.draw.circle(windowSurface, RED, (x_motion, y_motion), size / 2)
+    #pygame.draw.circle(windowSurface, RED, (x_motion, y_motion), size / 2)
     bullet_group.update()
     bullet_group.draw(windowSurface)
     
@@ -192,10 +233,10 @@ while True:
     if angle >= 360:
         angle = 0
     if direction == "left":
-        angle = angle + 3
-        print(angle)
+        angle = angle + 4
+        #print(angle)
     if direction == "right":
-        angle = angle - 3
+        angle = angle - 4
         
     if forward == True:
         center = [x_motion, y_motion]
@@ -216,43 +257,40 @@ while True:
         bullet = Bullet(radian_angle, center)
         bullet_group.add(bullet)
         fire = False
-        
+
+
+
     for bullet in bullet_group:
-        if bullet.rect.centerx > screen_size[0]:
-            bullet.exceed_pos_x = True
-            print("exceeded screen width")
-        
-        
-        if bullet.rect.centerx < 0:
-            bullet.exceed_neg_x = True            
-            
-            
-        if bullet.rect.centery > 600:
-            bullet.exceed_pos_y = True
-            
-        if bullet.rect.centery < 0:
-            bullet.exceed_neg_y = True
-            
     ####### checking boundaries
         if bullet.pass_boundary == True:
-            if bullet.radius > bullet.original_center[0] - 300:
+            if bullet.rect.centerx > bullet.original_center[0] - 400:
                 bullet_group.remove(bullet)
                 #bullet.pass_boundary = False
         
         if bullet.pass_boundary_neg_x == True:
-            if bullet.radius > bullet.original_center[0] + 300:
+            if bullet.rect.centerx < bullet.original_center[0] + 400:
                 bullet_group.remove(bullet)
                 
         
         if bullet.pass_boundary_pos_y == True:
-            if bullet.radius > bullet.original_center[1] - 300:
+            if bullet.rect.centery > bullet.original_center[1] - 300:
                 bullet_group.remove(bullet)
                 
         if bullet.pass_boundary_neg_y == True:
-            if bullet.radius > bullet.original_center[1] + 200:
+            if bullet.rect.centery < bullet.original_center[1] + 300:
                 bullet_group.remove(bullet)
         
     pygame.sprite.groupcollide(bullet_group, rock_group, True, True)
+    
+    
+    #for rock in rock_group:
+        
+    
+    
+    if elapsed_rock_time > 2:
+        rock = Rock()
+        rock_group.add(rock)
+        initial_rock_time = pygame.time.get_ticks()
     
     clock.tick(FPS)
     pygame.display.update()
