@@ -63,15 +63,19 @@ class Bullet(pygame.sprite.Sprite):
             
         
 class Rock(pygame.sprite.Sprite):
-    def __init__(self):
+    def __init__(self, size = 80):
         pygame.sprite.Sprite.__init__(self)
         rand_x = random.randint(0, 800)
         rand_y = random.randint(0, 600)
-        self.image = pygame.Surface((40, 40))
-        self.rect = pygame.draw.circle(self.image, (0, 255, 0), (20, 20), 20, 2)
+        self.size = size
+        self.image = pygame.Surface((self.size, self.size))
+        self.center = [self.size / 2, self.size / 2]
+        self.rect = pygame.draw.circle(self.image, (0, 255, 0), (self.center), self.size / 2, 2)
         self.rect.center = (rand_x, rand_y)
         
-        self.direction = random.choice(["right", "left", "up", "down"])
+        self.direction = random.choice(["right", "left", "up", "down",
+                                        "up_right", "up_left",
+                                        "down_right", "down_left"])
     def update(self):
         if self.direction == "right":
             self.rect.centerx += 1
@@ -81,6 +85,18 @@ class Rock(pygame.sprite.Sprite):
             self.rect.centery -= 1
         if self.direction == "down":
             self.rect.centery += 1
+        if self.direction == "up_right":
+            self.rect.centery -= 1
+            self.rect.centerx += 1
+        if self.direction == "up_left":
+            self.rect.centery -= 1
+            self.rect.centerx -= 1
+        if self.direction == "down_right":
+            self.rect.centery += 1
+            self.rect.centerx += 1
+        if self.direction == "down_left":
+            self.rect.centery += 1
+            self.rect.centerx -= 1
         
         if self.rect.centerx > 800:
             self.rect.centerx = 0
@@ -280,7 +296,23 @@ while True:
             if bullet.rect.centery < bullet.original_center[1] + 300:
                 bullet_group.remove(bullet)
         
-    pygame.sprite.groupcollide(bullet_group, rock_group, True, True)
+## collision with rock & bullet     
+    #pygame.sprite.groupcollide(bullet_group, rock_group, True, True)
+    for rock in rock_group:
+        for bullet in bullet_group:
+            if bullet.rect.colliderect(rock.rect):
+                bullet_group.remove(bullet)
+                if rock.size > 20:
+                    new_rock = Rock(rock.size / 2)
+                    new_rock.rect.center = rock.rect.center
+                    rock_group.add(new_rock)
+                    new_rock = Rock(rock.size / 2)
+                    new_rock.rect.center = rock.rect.center
+                    rock_group.add(new_rock)
+                
+                rock_group.remove(rock)
+                
+    
     
     
     #for rock in rock_group:
