@@ -11,12 +11,21 @@ class Rock(pygame.sprite.Sprite):
         self.image.fill((0, 0, 0))
         self.image.set_colorkey((0, 0, 0))
         self.center = [self.size / 2, self.size / 2]
-        self.rect = pygame.draw.circle(self.image, (0, 255, 0), (self.center), self.size / 2, 2)
+
+        self.draw()
         self.rect.center = (rand_x, rand_y)
+
 
         self.direction = random.choice(["right", "left", "up", "down",
                                         "up_right", "up_left",
                                         "down_right", "down_left"])
+
+    def draw(self):
+        self.rect = pygame.draw.circle(self.image, (0, 255, 0), (self.center), self.size / 2, 1)
+        pygame.draw.circle(self.image, (62, 199, 238), (self.center), int(.8 * self.size / 2), 1)
+        pygame.draw.circle(self.image, (255, 40, 89), (self.center), int(.5 * self.size / 2), 1)
+
+
     def update(self):
         if self.direction == "right":
             self.rect.centerx += 1

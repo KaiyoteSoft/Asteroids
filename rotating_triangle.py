@@ -4,13 +4,7 @@ import random
 from pygame.locals import *
 from bullet import *
 from rock import *
-
-
-            
-        
-
-    
-
+from score import *
 
 pygame.init()
 
@@ -34,6 +28,9 @@ clock = pygame.time.Clock()
 FPS = 30
 
 forward = False
+ship_min_brake = 4
+ship_speed_brake = ship_min_brake
+
 fume = False
 
 direction = "stop"
@@ -45,6 +42,9 @@ rock_group = pygame.sprite.Group()
 rock_group.add(rock)
 
 initial_rock_time = pygame.time.get_ticks()
+
+# score = 0
+score = Score()
 
 while True:
     for event in pygame.event.get():
@@ -62,12 +62,14 @@ while True:
                 radius = radius + 10
             if event.key == K_UP:
                 forward = True
+                thruster_start_time = pygame.time.get_ticks()
+                ship_speed_brake = ship_min_brake
                 fume = True
             if event.key == K_SPACE:
                 fire = True
         if event.type == KEYUP:
             if event.key == K_UP:
-                forward = False
+                #forward = False
                 fume = False
             if event.key == K_RIGHT:
                 direction = "stop"
@@ -97,8 +99,8 @@ while True:
     y_3 = int(center[1] - length_y_3)
     
 ###
-    length_x_motion = math.cos(radian_angle) * radius / 5
-    length_y_motion = math.sin(radian_angle) * radius / 5
+    length_x_motion = math.cos(radian_angle) * radius / ship_speed_brake
+    length_y_motion = math.sin(radian_angle) * radius / ship_speed_brake
     x_motion = int(center[0] + length_x_motion)
     y_motion = int(center[1] - length_y_motion)
      
@@ -132,8 +134,11 @@ while True:
     
 ### timer for rock
     elapsed_rock_time = (pygame.time.get_ticks() - initial_rock_time) / 1000
-    print(elapsed_rock_time)
-    
+    # print(elapsed_rock_time)
+
+    score.update()
+    windowSurface.blit(score.score_surface, (10, 10))
+
     rock_group.update()
     rock_group.draw(windowSurface)
     
@@ -141,7 +146,10 @@ while True:
     pygame.draw.line(windowSurface, WHITE, (x_2, y_2), (center))
     pygame.draw.line(windowSurface, WHITE, (center), (x_3, y_3))
     pygame.draw.line(windowSurface, WHITE, (x_3, y_3), (x, y))
-    
+
+    ship_rect = pygame.Rect(0, 0, radius * 1.5, radius * 1.5)
+    ship_rect.center = center
+
     #pygame.draw.circle(windowSurface, RED, (x_motion, y_motion), size / 2)
     bullet_group.update()
     bullet_group.draw(windowSurface)
@@ -156,9 +164,18 @@ while True:
         #print(angle)
     if direction == "right":
         angle = angle - 4
-        
+
+
+
     if forward == True:
         center = [x_motion, y_motion]
+        thruster_elapsed_time = pygame.time.get_ticks() - thruster_start_time
+        if thruster_elapsed_time > 6000:
+            forward = False
+        if thruster_elapsed_time > 2000:
+            ship_speed_brake = 8
+        if thruster_elapsed_time > 4000:
+            ship_speed_brake = 12
         
     if fume == True:
         pygame.draw.circle(windowSurface, ORANGE, (thrust_x, thrust_y), size, 2)
@@ -205,6 +222,9 @@ while True:
         for bullet in bullet_group:
             if bullet.rect.colliderect(rock.rect):
                 bullet_group.remove(bullet)
+                score.points = score.points + 1
+                print (score.points)
+
                 if rock.size > 20:
                     new_rock = Rock(rock.size / 2)
                     new_rock.rect.center = rock.rect.center
@@ -214,6 +234,15 @@ while True:
                     rock_group.add(new_rock)
                 
                 rock_group.remove(rock)
+
+
+        if ship_rect.colliderect(rock.rect):
+            score.points = 0
+            print ("ship hit rock")
+            forward = False
+            bullet_group.empty()
+            rock_group.empty()
+            center = (400, 300)
                 
     
     
