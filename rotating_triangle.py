@@ -2,110 +2,13 @@ import pygame, sys
 import math
 import random
 from pygame.locals import *
+from bullet import *
+from rock import *
 
-class Bullet(pygame.sprite.Sprite):
-    def __init__(self, radian_angle, center):
-        pygame.sprite.Sprite.__init__(self)
-        self.image = pygame.Surface((4, 4))
-        self.rect = self.image.get_rect()
-        self.rect.center = center
-        pygame.draw.circle(self.image, (255, 255, 255), (2, 2), 2)
-        self.radian_angle = radian_angle
-        self.radius = 70
-        self.bullet_center = [center[0], center[1]]
-        self.original_center = center
-        
-        ### flags
-        self.pass_boundary = False
-        self.pass_boundary_neg_x = False
+
+            
         
 
-        self.pass_boundary_pos_y = False
-        self.pass_boundary_neg_y = False
-    
-    def update(self):
-        length_x_fire = math.cos(self.radian_angle) * self.radius 
-        length_y_fire = math.sin(self.radian_angle) * self.radius 
-        x_fire = int(self.bullet_center[0] + length_x_fire)
-        y_fire = int(self.bullet_center[1] - length_y_fire)
-        self.rect.center = [x_fire, y_fire] 
-        #print (self.rect)
-        
-        self.radius = self.radius + 13
-        
-        if self.rect.centerx > 800:
-            #self.new_x_pos = self.bullet_center
-            self.bullet_center[0] = 0
-            self.rect.centerx = self.bullet_center[0]
-            self.radius = 0
-            self.pass_boundary = True
-            #self.exceed_pos_x = False
-            
-        if self.rect.centerx < 0:
-            self.bullet_center[0] = 790
-            self.rect.centerx = self.bullet_center[0]
-            self.radius = 0
-            self.pass_boundary_neg_x = True
-            #self.exceed_neg_x = False
-    
-        if self.rect.centery > 600:
-            self.bullet_center[1] = 0
-            self.rect.centery = self.bullet_center[1]
-            self.radius = 0
-            self.pass_boundary_pos_y = True
-            #self.exceed_pos_y = False
-            
-        if self.rect.centery < 0:
-            self.bullet_center[1] = 600
-            self.rect.centery = self.bullet_center[1]
-            self.radius = 0
-            self.pass_boundary_neg_y = True
-            
-        
-class Rock(pygame.sprite.Sprite):
-    def __init__(self, size = 80):
-        pygame.sprite.Sprite.__init__(self)
-        rand_x = random.randint(0, 800)
-        rand_y = random.randint(0, 600)
-        self.size = size
-        self.image = pygame.Surface((self.size, self.size))
-        self.center = [self.size / 2, self.size / 2]
-        self.rect = pygame.draw.circle(self.image, (0, 255, 0), (self.center), self.size / 2, 2)
-        self.rect.center = (rand_x, rand_y)
-        
-        self.direction = random.choice(["right", "left", "up", "down",
-                                        "up_right", "up_left",
-                                        "down_right", "down_left"])
-    def update(self):
-        if self.direction == "right":
-            self.rect.centerx += 1
-        if self.direction == "left":
-            self.rect.centerx -= 1
-        if self.direction == "up":
-            self.rect.centery -= 1
-        if self.direction == "down":
-            self.rect.centery += 1
-        if self.direction == "up_right":
-            self.rect.centery -= 1
-            self.rect.centerx += 1
-        if self.direction == "up_left":
-            self.rect.centery -= 1
-            self.rect.centerx -= 1
-        if self.direction == "down_right":
-            self.rect.centery += 1
-            self.rect.centerx += 1
-        if self.direction == "down_left":
-            self.rect.centery += 1
-            self.rect.centerx -= 1
-        
-        if self.rect.centerx > 800:
-            self.rect.centerx = 0
-        if self.rect.centerx < 0:
-            self.rect.centerx = 800
-        if self.rect.centery > 600:
-            self.rect.centery = 0
-        if self.rect.centery < 0:
-            self.rect.centery = 600
     
 
 
