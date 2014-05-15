@@ -6,6 +6,11 @@ from bullet import *
 from rock import *
 from score import *
 
+try:
+    import android
+except ImportError:
+    android = None
+
 pygame.init()
 
 
@@ -46,12 +51,29 @@ initial_rock_time = pygame.time.get_ticks()
 # score = 0
 score = Score()
 
+left_circle = pygame.draw.circle(windowSurface, (255, 255, 255), (100, 520), 30, 2)
+right_circle = pygame.draw.circle(windowSurface, (255, 255, 255), (200, 520), 30, 2)
+forward_circle = pygame.draw.circle(windowSurface, (255, 255, 255), (150, 450), 30, 2)
+
+shoot_circle = pygame.draw.circle(windowSurface, (255, 0, 0), (650, 520), 40, 2)
+
+pressed = False
+
+if android:
+    android.init()
+    android.map_key(android.KEYCODE_BACK, pygame.K_ESCAPE)
+
 while True:
     for event in pygame.event.get():
         if event.type == QUIT:
             pygame.quit()
             sys.exit()
+
+        mouse_pos = pygame.mouse.get_pos()
         if event.type == KEYDOWN:
+            if event.key == K_ESCAPE:
+                pygame.quit()
+                sys.exit()
             if event.key == K_RIGHT:
                 direction = "right"
             if event.key == K_LEFT:
@@ -75,7 +97,25 @@ while True:
                 direction = "stop"
             if event.key == K_LEFT:
                 direction = "stop"
-            
+
+        if event.type == MOUSEBUTTONDOWN:
+            if left_circle.collidepoint(mouse_pos):
+                direction = "left"
+                pressed = True
+            if right_circle.collidepoint(mouse_pos):
+                direction = "right"
+                pressed = True
+            if forward_circle.collidepoint(mouse_pos):
+                forward = True
+                thruster_start_time = pygame.time.get_ticks()
+                ship_speed_brake = ship_min_brake
+                fume = True
+            if shoot_circle.collidepoint(mouse_pos):
+                fire = True
+        if event.type == MOUSEBUTTONUP:
+             pressed = False
+             fume = False
+
     
     radian_angle = math.radians(angle)
     length_x = math.cos(radian_angle) * radius
@@ -147,34 +187,44 @@ while True:
     pygame.draw.line(windowSurface, WHITE, (center), (x_3, y_3))
     pygame.draw.line(windowSurface, WHITE, (x_3, y_3), (x, y))
 
+    left_circle = pygame.draw.circle(windowSurface, (255, 255, 255), (100, 520), 30, 2)
+    right_circle = pygame.draw.circle(windowSurface, (255, 255, 255), (200, 520), 30, 2)
+    forward_circle = pygame.draw.circle(windowSurface, (255, 255, 255), (150, 450), 30, 2)
+
+    shoot_circle = pygame.draw.circle(windowSurface, (255, 0, 0), (650, 520), 40, 2)
+
     ship_rect = pygame.Rect(0, 0, radius * 1.5, radius * 1.5)
     ship_rect.center = center
 
     #pygame.draw.circle(windowSurface, RED, (x_motion, y_motion), size / 2)
     bullet_group.update()
     bullet_group.draw(windowSurface)
-    
-    
-    
-    
+
+
+    # if left_circle.collidepoint(mouse_pos):
+    #     direction = "left"
+    # if right_circle.collidepoint(mouse_pos):
+    #     direction = "right"
+
+
     if angle >= 360:
         angle = 0
-    if direction == "left":
-        angle = angle + 4
+    if direction == "left" and pressed == True:
+        angle = angle + 5
         #print(angle)
-    if direction == "right":
-        angle = angle - 4
+    if direction == "right" and pressed == True:
+        angle = angle - 5
 
 
 
     if forward == True:
         center = [x_motion, y_motion]
         thruster_elapsed_time = pygame.time.get_ticks() - thruster_start_time
-        if thruster_elapsed_time > 6000:
+        if thruster_elapsed_time > 3000:
             forward = False
-        if thruster_elapsed_time > 2000:
+        if thruster_elapsed_time > 1000:
             ship_speed_brake = 8
-        if thruster_elapsed_time > 4000:
+        if thruster_elapsed_time > 2000:
             ship_speed_brake = 12
         
     if fume == True:
