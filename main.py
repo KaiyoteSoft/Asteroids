@@ -13,6 +13,15 @@ except ImportError:
 
 pygame.init()
 
+if android:
+    android.init()
+    android.map_key(android.KEYCODE_BACK, pygame.K_ESCAPE)
+
+try:
+    import pygame.mixer as mixer
+except ImportError:
+    import android.mixer as mixer
+
 
 RED = ((255, 0, 0))
 GREEN = ((0, 255, 0))
@@ -25,7 +34,7 @@ radius = 20
 
 thruster_radius = 50
 
-screen_size = (800, 600)
+screen_size = (1280, 770)
 windowSurface = pygame.display.set_mode(screen_size)
 
 
@@ -42,7 +51,7 @@ direction = "stop"
 fire = False
 bullet_group = pygame.sprite.Group()
 
-rock = Rock()
+rock = Rock(80, screen_size)
 rock_group = pygame.sprite.Group()
 rock_group.add(rock)
 
@@ -51,17 +60,18 @@ initial_rock_time = pygame.time.get_ticks()
 # score = 0
 score = Score()
 
-left_circle = pygame.draw.circle(windowSurface, (255, 255, 255), (100, 520), 30, 2)
-right_circle = pygame.draw.circle(windowSurface, (255, 255, 255), (200, 520), 30, 2)
-forward_circle = pygame.draw.circle(windowSurface, (255, 255, 255), (150, 450), 30, 2)
+left_circle = pygame.draw.circle(windowSurface, (255, 255, 255), (100, 600), 30, 2)
+right_circle = pygame.draw.circle(windowSurface, (255, 255, 255), (200, 600), 30, 2)
+forward_circle = pygame.draw.circle(windowSurface, (255, 255, 255), (150, 520), 30, 2)
 
-shoot_circle = pygame.draw.circle(windowSurface, (255, 0, 0), (650, 520), 40, 2)
+shoot_circle = pygame.draw.circle(windowSurface, (255, 0, 0), (1100, 580), 40, 2)
 
 pressed = False
 
-if android:
-    android.init()
-    android.map_key(android.KEYCODE_BACK, pygame.K_ESCAPE)
+#### sound
+fire_snd = mixer.Sound("snd/fire.wav")
+big_rock_snd = mixer.Sound("snd/banglarge.wav")
+medium_rock_snd = mixer.Sound("snd/bangmedium.wav")
 
 while True:
     for event in pygame.event.get():
@@ -112,6 +122,7 @@ while True:
                 fume = True
             if shoot_circle.collidepoint(mouse_pos):
                 fire = True
+
         if event.type == MOUSEBUTTONUP:
              pressed = False
              fume = False
@@ -179,6 +190,12 @@ while True:
     score.update()
     windowSurface.blit(score.score_surface, (10, 10))
 
+    left_circle = pygame.draw.circle(windowSurface, (255, 255, 255), (100, 620), 60, 2)
+    right_circle = pygame.draw.circle(windowSurface, (255, 255, 255), (300, 620), 60, 2)
+    forward_circle = pygame.draw.circle(windowSurface, (255, 255, 255), (200, 480), 60, 2)
+
+    shoot_circle = pygame.draw.circle(windowSurface, (255, 0, 0), (1100, 580), 70, 2)
+
     rock_group.update()
     rock_group.draw(windowSurface)
     
@@ -187,24 +204,12 @@ while True:
     pygame.draw.line(windowSurface, WHITE, (center), (x_3, y_3))
     pygame.draw.line(windowSurface, WHITE, (x_3, y_3), (x, y))
 
-    left_circle = pygame.draw.circle(windowSurface, (255, 255, 255), (100, 520), 30, 2)
-    right_circle = pygame.draw.circle(windowSurface, (255, 255, 255), (200, 520), 30, 2)
-    forward_circle = pygame.draw.circle(windowSurface, (255, 255, 255), (150, 450), 30, 2)
-
-    shoot_circle = pygame.draw.circle(windowSurface, (255, 0, 0), (650, 520), 40, 2)
-
     ship_rect = pygame.Rect(0, 0, radius * 1.5, radius * 1.5)
     ship_rect.center = center
 
     #pygame.draw.circle(windowSurface, RED, (x_motion, y_motion), size / 2)
     bullet_group.update()
     bullet_group.draw(windowSurface)
-
-
-    # if left_circle.collidepoint(mouse_pos):
-    #     direction = "left"
-    # if right_circle.collidepoint(mouse_pos):
-    #     direction = "right"
 
 
     if angle >= 360:
@@ -240,30 +245,31 @@ while True:
         center[1] = screen_size[1]
         
     if fire == True:
-        bullet = Bullet(radian_angle, center)
+        bullet = Bullet(radian_angle, center, screen_size)
         bullet_group.add(bullet)
         fire = False
+        fire_snd.play()
 
 
 
     for bullet in bullet_group:
     ####### checking boundaries
         if bullet.pass_boundary == True:
-            if bullet.rect.centerx > bullet.original_center[0] - 400:
+            if bullet.rect.centerx > bullet.original_center[0] - 800:
                 bullet_group.remove(bullet)
                 #bullet.pass_boundary = False
         
         if bullet.pass_boundary_neg_x == True:
-            if bullet.rect.centerx < bullet.original_center[0] + 400:
+            if bullet.rect.centerx < bullet.original_center[0] + 800:
                 bullet_group.remove(bullet)
                 
         
         if bullet.pass_boundary_pos_y == True:
-            if bullet.rect.centery > bullet.original_center[1] - 300:
+            if bullet.rect.centery > bullet.original_center[1] - 400:
                 bullet_group.remove(bullet)
                 
         if bullet.pass_boundary_neg_y == True:
-            if bullet.rect.centery < bullet.original_center[1] + 300:
+            if bullet.rect.centery < bullet.original_center[1] + 400:
                 bullet_group.remove(bullet)
         
 ## collision with rock & bullet     
@@ -273,18 +279,19 @@ while True:
             if bullet.rect.colliderect(rock.rect):
                 bullet_group.remove(bullet)
                 score.points = score.points + 1
+                big_rock_snd.play()
                 print (score.points)
 
                 if rock.size > 20:
-                    new_rock = Rock(rock.size / 2)
+                    new_rock = Rock(rock.size / 2, screen_size)
                     new_rock.rect.center = rock.rect.center
                     rock_group.add(new_rock)
-                    new_rock = Rock(rock.size / 2)
+                    new_rock = Rock(rock.size / 2, screen_size)
                     new_rock.rect.center = rock.rect.center
                     rock_group.add(new_rock)
                 
                 rock_group.remove(rock)
-
+                medium_rock_snd.play()
 
         if ship_rect.colliderect(rock.rect):
             score.points = 0
@@ -302,7 +309,7 @@ while True:
     
     
     if elapsed_rock_time > 2:
-        rock = Rock()
+        rock = Rock(80, screen_size)
         rock_group.add(rock)
         initial_rock_time = pygame.time.get_ticks()
     

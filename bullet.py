@@ -3,7 +3,7 @@ import math
 import random
 
 class Bullet(pygame.sprite.Sprite):
-    def __init__(self, radian_angle, center):
+    def __init__(self, radian_angle, center, screen_size):
         pygame.sprite.Sprite.__init__(self)
         self.image = pygame.Surface((4, 4))
         self.rect = self.image.get_rect()
@@ -13,6 +13,7 @@ class Bullet(pygame.sprite.Sprite):
         self.radius = 30
         self.bullet_center = [center[0], center[1]]
         self.original_center = center
+        self.screen_size = screen_size
 
         ### flags
         self.pass_boundary = False
@@ -32,7 +33,7 @@ class Bullet(pygame.sprite.Sprite):
 
         self.radius = self.radius + 13
 
-        if self.rect.centerx > 800:
+        if self.rect.centerx > self.screen_size[0]:
             #self.new_x_pos = self.bullet_center
             self.bullet_center[0] = 0
             self.rect.centerx = self.bullet_center[0]
@@ -41,13 +42,13 @@ class Bullet(pygame.sprite.Sprite):
             #self.exceed_pos_x = False
 
         if self.rect.centerx < 0:
-            self.bullet_center[0] = 790
+            self.bullet_center[0] = self.screen_size[0]
             self.rect.centerx = self.bullet_center[0]
             self.radius = 0
             self.pass_boundary_neg_x = True
             #self.exceed_neg_x = False
 
-        if self.rect.centery > 600:
+        if self.rect.centery > self.screen_size[1]:
             self.bullet_center[1] = 0
             self.rect.centery = self.bullet_center[1]
             self.radius = 0
@@ -55,7 +56,7 @@ class Bullet(pygame.sprite.Sprite):
             #self.exceed_pos_y = False
 
         if self.rect.centery < 0:
-            self.bullet_center[1] = 600
+            self.bullet_center[1] = self.screen_size[1]
             self.rect.centery = self.bullet_center[1]
             self.radius = 0
             self.pass_boundary_neg_y = True

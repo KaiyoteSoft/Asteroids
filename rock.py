@@ -2,7 +2,7 @@ import pygame
 import random
 
 class Rock(pygame.sprite.Sprite):
-    def __init__(self, size = 80):
+    def __init__(self, size, screen_size):
         pygame.sprite.Sprite.__init__(self)
         rand_x = random.randint(0, 800)
         rand_y = random.randint(0, 600)
@@ -11,6 +11,7 @@ class Rock(pygame.sprite.Sprite):
         self.image.fill((0, 0, 0))
         self.image.set_colorkey((0, 0, 0))
         self.center = [self.size / 2, self.size / 2]
+        self.screen_size = screen_size
 
         self.draw()
         self.rect.center = (rand_x, rand_y)
@@ -48,11 +49,11 @@ class Rock(pygame.sprite.Sprite):
             self.rect.centery += 1
             self.rect.centerx -= 1
 
-        if self.rect.centerx > 800:
+        if self.rect.centerx > self.screen_size[0]:
             self.rect.centerx = 0
         if self.rect.centerx < 0:
-            self.rect.centerx = 800
-        if self.rect.centery > 600:
+            self.rect.centerx = self.screen_size[0]
+        if self.rect.centery > self.screen_size[1]:
             self.rect.centery = 0
         if self.rect.centery < 0:
-            self.rect.centery = 600
+            self.rect.centery = self.screen_size[1]

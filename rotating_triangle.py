@@ -25,7 +25,7 @@ radius = 20
 
 thruster_radius = 50
 
-screen_size = (800, 600)
+screen_size = (1280, 720)
 windowSurface = pygame.display.set_mode(screen_size)
 
 
@@ -187,11 +187,11 @@ while True:
     pygame.draw.line(windowSurface, WHITE, (center), (x_3, y_3))
     pygame.draw.line(windowSurface, WHITE, (x_3, y_3), (x, y))
 
-    left_circle = pygame.draw.circle(windowSurface, (255, 255, 255), (100, 520), 30, 2)
-    right_circle = pygame.draw.circle(windowSurface, (255, 255, 255), (200, 520), 30, 2)
-    forward_circle = pygame.draw.circle(windowSurface, (255, 255, 255), (150, 450), 30, 2)
+    left_circle = pygame.draw.circle(windowSurface, (255, 255, 255), (100, 600), 30, 2)
+    right_circle = pygame.draw.circle(windowSurface, (255, 255, 255), (200, 600), 30, 2)
+    forward_circle = pygame.draw.circle(windowSurface, (255, 255, 255), (150, 520), 30, 2)
 
-    shoot_circle = pygame.draw.circle(windowSurface, (255, 0, 0), (650, 520), 40, 2)
+    shoot_circle = pygame.draw.circle(windowSurface, (255, 0, 0), (1100, 580), 40, 2)
 
     ship_rect = pygame.Rect(0, 0, radius * 1.5, radius * 1.5)
     ship_rect.center = center
@@ -240,7 +240,7 @@ while True:
         center[1] = screen_size[1]
         
     if fire == True:
-        bullet = Bullet(radian_angle, center)
+        bullet = Bullet(radian_angle, center, screen_size)
         bullet_group.add(bullet)
         fire = False
 
@@ -249,21 +249,21 @@ while True:
     for bullet in bullet_group:
     ####### checking boundaries
         if bullet.pass_boundary == True:
-            if bullet.rect.centerx > bullet.original_center[0] - 400:
+            if bullet.rect.centerx > bullet.original_center[0] - 800:
                 bullet_group.remove(bullet)
                 #bullet.pass_boundary = False
         
         if bullet.pass_boundary_neg_x == True:
-            if bullet.rect.centerx < bullet.original_center[0] + 400:
+            if bullet.rect.centerx < bullet.original_center[0] + 800:
                 bullet_group.remove(bullet)
                 
         
         if bullet.pass_boundary_pos_y == True:
-            if bullet.rect.centery > bullet.original_center[1] - 300:
+            if bullet.rect.centery > bullet.original_center[1] - 400:
                 bullet_group.remove(bullet)
                 
         if bullet.pass_boundary_neg_y == True:
-            if bullet.rect.centery < bullet.original_center[1] + 300:
+            if bullet.rect.centery < bullet.original_center[1] + 400:
                 bullet_group.remove(bullet)
         
 ## collision with rock & bullet     
