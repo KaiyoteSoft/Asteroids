@@ -2,11 +2,12 @@ import pygame
 import random
 
 class Rock(pygame.sprite.Sprite):
-    def __init__(self, size, screen_size):
+    def __init__(self, size, screen_size, speed):
         pygame.sprite.Sprite.__init__(self)
         rand_x = random.randint(0, 800)
         rand_y = random.randint(0, 600)
         self.size = size
+        self.speed = speed
         self.image = pygame.Surface((self.size, self.size))
         self.image.fill((0, 0, 0))
         self.image.set_colorkey((0, 0, 0))
@@ -29,25 +30,25 @@ class Rock(pygame.sprite.Sprite):
 
     def update(self):
         if self.direction == "right":
-            self.rect.centerx += 1
+            self.rect.centerx += self.speed
         if self.direction == "left":
-            self.rect.centerx -= 1
+            self.rect.centerx -= self.speed
         if self.direction == "up":
-            self.rect.centery -= 1
+            self.rect.centery -= self.speed
         if self.direction == "down":
-            self.rect.centery += 1
+            self.rect.centery += self.speed
         if self.direction == "up_right":
-            self.rect.centery -= 1
-            self.rect.centerx += 1
+            self.rect.centery -= self.speed
+            self.rect.centerx += self.speed
         if self.direction == "up_left":
-            self.rect.centery -= 1
-            self.rect.centerx -= 1
+            self.rect.centery -= self.speed
+            self.rect.centerx -= self.speed
         if self.direction == "down_right":
-            self.rect.centery += 1
-            self.rect.centerx += 1
+            self.rect.centery += self.speed
+            self.rect.centerx += self.speed
         if self.direction == "down_left":
-            self.rect.centery += 1
-            self.rect.centerx -= 1
+            self.rect.centery += self.speed
+            self.rect.centerx -= self.speed
 
         if self.rect.centerx > self.screen_size[0]:
             self.rect.centerx = 0

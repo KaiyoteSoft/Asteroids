@@ -26,6 +26,12 @@ except ImportError:
 RED = ((255, 0, 0))
 GREEN = ((0, 255, 0))
 ORANGE = ((254, 158, 27))
+BLACK = (0, 0, 0)
+PINK = (254, 15, 234)
+LIGHTBLUE = (0, 255, 252)
+DARKRED = (198, 46, 46)
+
+
 center = [400, 300]
 size = 7
 angle = 0
@@ -51,7 +57,8 @@ direction = "stop"
 fire = False
 bullet_group = pygame.sprite.Group()
 
-rock = Rock(80, screen_size)
+speed = 1
+rock = Rock(80, screen_size, speed = 1)
 rock_group = pygame.sprite.Group()
 rock_group.add(rock)
 
@@ -72,6 +79,31 @@ pressed = False
 fire_snd = mixer.Sound("snd/fire.wav")
 big_rock_snd = mixer.Sound("snd/banglarge.wav")
 medium_rock_snd = mixer.Sound("snd/bangmedium.wav")
+
+gameOn = True
+
+### Create a rectangle for Play Again = Yes
+yes_font = pygame.font.Font("fonts/ASTONISH.TTF", 80)
+yes_text = yes_font.render("YES!!!", True, GREEN)
+yes_rect = pygame.Rect(150, 300, 150, 60)
+
+## Create a rectangle for the "Player DEAD :)
+endFont = pygame.font.Font("fonts/BLOODY.ttf", 130)
+endText = endFont.render("DEAD", True , RED)
+endText_rect = pygame.Rect(600, 10, 200, 200)
+
+### Create a rectangle for Play Again
+playAgain_font = pygame.font.Font("fonts/ASTONISH.TTF", 80)
+playAgain_text = playAgain_font.render("Play Again? ", True, LIGHTBLUE)
+playAgain_rect = pygame.Rect(500, 150, 480, 180)
+
+### Create a rectangle for Play Again = No
+no_font = pygame.font.Font("fonts/BLOODY.ttf", 85)
+no_text = no_font.render("No...", True, DARKRED)
+no_rect = pygame.Rect(800, 300, 150, 60)
+
+
+
 
 while True:
     for event in pygame.event.get():
@@ -120,8 +152,16 @@ while True:
                 thruster_start_time = pygame.time.get_ticks()
                 ship_speed_brake = ship_min_brake
                 fume = True
-            if shoot_circle.collidepoint(mouse_pos):
+            if shoot_circle.collidepoint(mouse_pos) and gameOn == True:
                 fire = True
+
+            if no_rect.collidepoint(mouse_pos):
+                pygame.quit()
+                sys.exit()
+            if yes_rect.collidepoint(mouse_pos):
+                gameOn = True
+                score.points = 0
+                score = Score()
 
         if event.type == MOUSEBUTTONUP:
              pressed = False
@@ -283,10 +323,10 @@ while True:
                 print (score.points)
 
                 if rock.size > 20:
-                    new_rock = Rock(rock.size / 2, screen_size)
+                    new_rock = Rock(rock.size / 2, screen_size, speed + 1)
                     new_rock.rect.center = rock.rect.center
                     rock_group.add(new_rock)
-                    new_rock = Rock(rock.size / 2, screen_size)
+                    new_rock = Rock(rock.size / 2, screen_size, speed + 1)
                     new_rock.rect.center = rock.rect.center
                     rock_group.add(new_rock)
                 
@@ -294,14 +334,14 @@ while True:
                 medium_rock_snd.play()
 
         if ship_rect.colliderect(rock.rect):
-            score.points = 0
+
             print ("ship hit rock")
             forward = False
             bullet_group.empty()
             rock_group.empty()
             center = (400, 300)
-                
-    
+            gameOn = False
+
     
     
     #for rock in rock_group:
@@ -309,10 +349,49 @@ while True:
     
     
     if elapsed_rock_time > 2:
-        rock = Rock(80, screen_size)
+        rock = Rock(80, screen_size, 1)
         rock_group.add(rock)
         initial_rock_time = pygame.time.get_ticks()
-    
+
+
+    if gameOn == False:
+        windowSurface.fill((0, 0, 0))
+        windowSurface.blit(endText, endText_rect)
+        windowSurface.blit(playAgain_text, playAgain_rect)
+        windowSurface.blit(no_text, no_rect)
+        windowSurface.blit(yes_text, yes_rect)
+        fire = False
+###### score
+        file_score = open("high_score.txt", "r+")
+        file_points = file_score.read()
+
+        try:
+            file_points = int(file_points)
+        except:
+            file_points = 0
+
+        if score.points > file_points:
+            print("High Score")
+            file_score.seek(0)
+            print(score.points)
+            file_score.write(str(score.points))
+        else:
+            print("Lower Score")
+            print(score.points)
+            file_score.close()
+
+        ### Scores
+        score_font = pygame.font.Font("fonts/animeace2_reg.ttf", 80)
+        high_score_text = score_font.render("High Score is : " + str(file_points), True, GREEN)
+        high_score_rect = pygame.Rect(10, 600, 200, 200)
+
+        score_text = score_font.render("Your Score is : " + str(score.points), True, RED)
+        score_rect = pygame.Rect(50, 450, 200, 200)
+
+        windowSurface.blit(high_score_text, high_score_rect)
+        windowSurface.blit(score_text, score_rect)
+
+
     clock.tick(FPS)
     pygame.display.update()
     

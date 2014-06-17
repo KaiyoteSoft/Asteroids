@@ -10,3 +10,4 @@ class Score():
     def update(self):
         self.score_surface = self.font.render("SCORE: " + str(self.points), True, self.WHITE)
 
+
