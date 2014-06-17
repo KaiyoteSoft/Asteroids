@@ -390,7 +390,7 @@ while True:
 
         windowSurface.blit(high_score_text, high_score_rect)
         windowSurface.blit(score_text, score_rect)
-### comment
+### comment2
 
     clock.tick(FPS)
     pygame.display.update()
