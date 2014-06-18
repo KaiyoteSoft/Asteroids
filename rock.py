@@ -2,10 +2,9 @@ import pygame
 import random
 
 class Rock(pygame.sprite.Sprite):
-    def __init__(self, size, screen_size, speed):
+    def __init__(self, safe_rect, size, screen_size, speed):
         pygame.sprite.Sprite.__init__(self)
-        rand_x = random.randint(0, 800)
-        rand_y = random.randint(0, 600)
+
         self.size = size
         self.speed = speed
         self.image = pygame.Surface((self.size, self.size))
@@ -13,9 +12,13 @@ class Rock(pygame.sprite.Sprite):
         self.image.set_colorkey((0, 0, 0))
         self.center = [self.size / 2, self.size / 2]
         self.screen_size = screen_size
+        self.buffer = 300
+        self.safe_rect = safe_rect
+        self.rect = pygame.Rect(0, 0, self.size, self.size)
+        self.set_position()
 
         self.draw()
-        self.rect.center = (rand_x, rand_y)
+
 
 
         self.direction = random.choice(["right", "left", "up", "down",
@@ -23,9 +26,27 @@ class Rock(pygame.sprite.Sprite):
                                         "down_right", "down_left"])
 
     def draw(self):
-        self.rect = pygame.draw.circle(self.image, (0, 255, 0), (self.center), self.size / 2, 1)
+        pygame.draw.circle(self.image, (0, 255, 0), (self.center), self.size / 2, 1)
         pygame.draw.circle(self.image, (62, 199, 238), (self.center), int(.8 * self.size / 2), 1)
         pygame.draw.circle(self.image, (255, 40, 89), (self.center), int(.5 * self.size / 2), 1)
+
+        # if (self.rect.centerx < 400 + self.buffer
+        #     and self.rect.centerx > 400 - self.buffer
+        #     and self.rect.centery < 300 + self.buffer
+        #     and self.rect.centery > 300 - self.buffer):
+        #     self.draw()
+
+        # print (self.rect.center, self.safe_rect)
+        #print(self.center)
+
+    def set_position(self):
+        self.rand_x = random.randint(0, 1280)
+        self.rand_y = random.randint(0, 770)
+
+        self.rect.center = (self.rand_x, self.rand_y)
+        if self.safe_rect.collidepoint(self.rect.center):
+            print ("BREACH at {} with ship at {}".format(self.rect.center, self.safe_rect))
+            self.set_position()
 
 
     def update(self):

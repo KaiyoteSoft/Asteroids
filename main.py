@@ -57,8 +57,11 @@ direction = "stop"
 fire = False
 bullet_group = pygame.sprite.Group()
 
+### rect for safe zone
+safe_rect = pygame.Rect(center[0], center[1], 400, 400)
+
 speed = 1
-rock = Rock(80, screen_size, speed = 1)
+rock = Rock(safe_rect, 80, screen_size, speed = 1)
 rock_group = pygame.sprite.Group()
 rock_group.add(rock)
 
@@ -101,7 +104,6 @@ playAgain_rect = pygame.Rect(500, 150, 480, 180)
 no_font = pygame.font.Font("fonts/BLOODY.ttf", 85)
 no_text = no_font.render("No...", True, DARKRED)
 no_rect = pygame.Rect(800, 300, 150, 60)
-
 
 
 
@@ -230,6 +232,9 @@ while True:
     score.update()
     windowSurface.blit(score.score_surface, (10, 10))
 
+    ship_rect = pygame.Rect(0, 0, radius * 1.5, radius * 1.5)
+    ship_rect.center = center
+
     left_circle = pygame.draw.circle(windowSurface, (255, 255, 255), (100, 620), 60, 2)
     right_circle = pygame.draw.circle(windowSurface, (255, 255, 255), (300, 620), 60, 2)
     forward_circle = pygame.draw.circle(windowSurface, (255, 255, 255), (200, 480), 60, 2)
@@ -238,14 +243,19 @@ while True:
 
     rock_group.update()
     rock_group.draw(windowSurface)
-    
+
+
+    safe_rect.center = ship_rect.center
+    #pygame.draw.rect(windowSurface, GREEN, safe_rect, 3)
+
     pygame.draw.line(windowSurface, WHITE, (x,y), (x_2, y_2))
     pygame.draw.line(windowSurface, WHITE, (x_2, y_2), (center))
     pygame.draw.line(windowSurface, WHITE, (center), (x_3, y_3))
     pygame.draw.line(windowSurface, WHITE, (x_3, y_3), (x, y))
 
-    ship_rect = pygame.Rect(0, 0, radius * 1.5, radius * 1.5)
-    ship_rect.center = center
+
+
+
 
     #pygame.draw.circle(windowSurface, RED, (x_motion, y_motion), size / 2)
     bullet_group.update()
@@ -320,13 +330,13 @@ while True:
                 bullet_group.remove(bullet)
                 score.points = score.points + 1
                 big_rock_snd.play()
-                print (score.points)
+               # print (score.points)
 
                 if rock.size > 20:
-                    new_rock = Rock(rock.size / 2, screen_size, speed + 1)
+                    new_rock = Rock(safe_rect, rock.size / 2, screen_size, speed + 1)
                     new_rock.rect.center = rock.rect.center
                     rock_group.add(new_rock)
-                    new_rock = Rock(rock.size / 2, screen_size, speed + 1)
+                    new_rock = Rock(safe_rect, rock.size / 2, screen_size, speed + 1)
                     new_rock.rect.center = rock.rect.center
                     rock_group.add(new_rock)
                 
@@ -335,7 +345,7 @@ while True:
 
         if ship_rect.colliderect(rock.rect):
 
-            print ("ship hit rock")
+           # print ("ship hit rock")
             forward = False
             bullet_group.empty()
             rock_group.empty()
@@ -349,7 +359,7 @@ while True:
     
     
     if elapsed_rock_time > 2:
-        rock = Rock(80, screen_size, 1)
+        rock = Rock(safe_rect, 80, screen_size, 1)
         rock_group.add(rock)
         initial_rock_time = pygame.time.get_ticks()
 
@@ -371,13 +381,13 @@ while True:
             file_points = 0
 
         if score.points > file_points:
-            print("High Score")
+           # print("High Score")
             file_score.seek(0)
-            print(score.points)
+            #print(score.points)
             file_score.write(str(score.points))
         else:
-            print("Lower Score")
-            print(score.points)
+            #print("Lower Score")
+            # print(score.points)
             file_score.close()
 
         ### Scores
